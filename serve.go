@@ -1,25 +1,35 @@
-package web
+package main
 
 import (
 	"html/template"
 	"log"
 	"net/http"
 
+	"github.com/braydenkilleen/baleen/database"
 	"github.com/braydenkilleen/baleen/models"
 	"github.com/gorilla/mux"
 )
 
+// // PageData ...
 type PageData struct {
 	Items []models.Item
 }
 
+// type spaHandler struct {
+// 	staticPath string
+// 	indexPath  string
+// }
+
+// ServeHTTP ...
+// func (h spaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+// }
 
 // Serve starts a webserver
 func Serve() {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		items, err := models.AllItems()
+		items, err := database.AllItems()
 		if err != nil {
 			log.Fatal(err)
 		}

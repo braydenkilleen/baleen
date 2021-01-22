@@ -2,9 +2,13 @@ package main
 
 import (
 	"database/sql"
+	"flag"
+	"fmt"
 	"log"
+	"os"
 
 	"github.com/braydenkilleen/baleen/database"
+	"github.com/braydenkilleen/baleen/web"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -16,47 +20,37 @@ type App struct {
 }
 
 func main() {
-	// Setup database
-	// var err error
-	// models.DB, err = sql.Open("sqlite3", "./tmp/test.db")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
 	// Initialize the database
 	err := database.InitDB("tmp/test.db")
     if err != nil {
         log.Fatal(err)
 	}
 
-	items, err := database.AllItems()
+	// ...
+	addCmd := flag.NewFlagSet("add", flag.ExitOnError)
+	listCmd := flag.NewFlagSet("list", flag.ExitOnError)
+	serveCmd := flag.NewFlagSet("serve", flag.ExitOnError)
+
+	switch os.Args[1] {
+	case "add":
+		addCmd.Parse(os.Args[2:])
+		database.AddItems(addCmd.Args())
+	case "list":
+		listCmd.Parsed()
+		items, err := database.AllItems()
 		if err != nil {
 			log.Fatal(err)
 		}
 		for _, i := range items {
 			log.Printf("%s", i.URL)
 		}
+	case "serve":
+		serveCmd.Parse(os.Args[2:])
+		web.Serve()
 
-
-	// CLI
-	// addCmd := flag.NewFlagSet("add", flag.ExitOnError)
-	// listCmd := flag.NewFlagSet("list", flag.ExitOnError)
-	// serveCmd := flag.NewFlagSet("serve", flag.ExitOnError)
-
-	// switch os.Args[1] {
-	// case "add":
-	// 	addCmd.Parse(os.Args[2:])
-	// 	// models.AddItems(addCmd.Args())
-	// case "list":
-	// 	listCmd.Parse(os.Args[2:])
-		
-	// case "serve":
-	// 	serveCmd.Parse(os.Args[2:])
-	// 	web.Serve()
-
-	// default:
-	// 	fmt.Printf("%q is not a valid command.\n", os.Args[1])
-	// 	os.Exit(1)
-	// }
+	default:
+		fmt.Printf("%q is not a valid command.\n", os.Args[1])
+		os.Exit(1)
+	}
 
 }
