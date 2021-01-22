@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/braydenkilleen/baleen/models"
+	"github.com/braydenkilleen/baleen/web"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -21,13 +22,14 @@ func main() {
 
 	// CLI
 	addCmd := flag.NewFlagSet("add", flag.ExitOnError)
-	// listCmd := flag.NewFlagSet("list", flag.ExitOnError)
-
+	listCmd := flag.NewFlagSet("list", flag.ExitOnError)
+	serveCmd := flag.NewFlagSet("serve", flag.ExitOnError)
 	switch os.Args[1] {
 	case "add":
 		addCmd.Parse(os.Args[2:])
 		models.AddItems(addCmd.Args())
 	case "list":
+		listCmd.Parse(os.Args[2:])
 		items, err := models.AllItems()
 		if err != nil {
 			log.Fatal(err)
@@ -35,6 +37,10 @@ func main() {
 		for _, i := range items {
 			log.Printf("%s", i.URL)
 		}
+	case "serve":
+		serveCmd.Parse(os.Args[2:])
+		web.Serve()
+
 	default:
 		fmt.Println("expected `add` subcommand.")
 		os.Exit(1)

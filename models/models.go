@@ -64,5 +64,4 @@ func AddItems(rawurls []string) {
 			return
 		}
 	}
-
 }
