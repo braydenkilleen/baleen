@@ -1,54 +1,43 @@
 package main
 
 import (
-	"context"
 	"database/sql"
+	"flag"
+	"fmt"
 	"log"
-	"net/url"
 	"os"
 
+	"github.com/braydenkilleen/baleen/models"
 	_ "github.com/mattn/go-sqlite3"
 )
 
-var (
-	ctx context.Context
-	db  *sql.DB
-)
-
 func main() {
+	// Setup database
 	var err error
-	db, err = sql.Open("sqlite3", "./tmp/test.db")
+	models.DB, err = sql.Open("sqlite3", "./tmp/test.db")
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer db.Close()
-	if err = db.Ping(); err != nil {
-		log.Fatal(err)
-	}
 
-	args := os.Args[1:]
+	// CLI
+	addCmd := flag.NewFlagSet("add", flag.ExitOnError)
+	// listCmd := flag.NewFlagSet("list", flag.ExitOnError)
 
-	switch args[0] {
+	switch os.Args[1] {
 	case "add":
-		addBookmark(args[1])
+		addCmd.Parse(os.Args[2:])
+		models.AddItems(addCmd.Args())
+	case "list":
+		items, err := models.AllItems()
+		if err != nil {
+			log.Fatal(err)
+		}
+		for _, i := range items {
+			log.Printf("%s", i.URL)
+		}
 	default:
-		println("unkown cmd")
-	}
-}
-
-func addBookmark(rawurl string) {
-	u, err := url.Parse(rawurl)
-	if err != nil {
-		log.Fatal(err)
+		fmt.Println("expected `add` subcommand.")
+		os.Exit(1)
 	}
 
-	result, err := db.Exec(
-		"INSERT INTO item (link, created) VALUES($1, date('now'))",
-		u.String())
-	if err != nil {
-		log.Fatalf("Error: %v", err)
-		return
-	}
-
-	log.Printf("%v", result)
 }
